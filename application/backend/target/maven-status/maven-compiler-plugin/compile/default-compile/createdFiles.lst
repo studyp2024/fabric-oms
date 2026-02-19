@@ -1,0 +1,12 @@
+com\oms\audit\entity\AuditLog.class
+com\oms\audit\OmsApplication.class
+com\oms\audit\repository\UserRepository.class
+com\oms\audit\entity\User.class
+com\oms\audit\controller\ServerController.class
+com\oms\audit\controller\AuditController.class
+com\oms\audit\controller\AuthController.class
+com\oms\audit\repository\ServerInfoRepository.class
+com\oms\audit\repository\AuditLogRepository.class
+com\oms\audit\entity\ServerInfo.class
+com\oms\audit\service\FabricService.class
+com\oms\audit\service\LogSyncService.class

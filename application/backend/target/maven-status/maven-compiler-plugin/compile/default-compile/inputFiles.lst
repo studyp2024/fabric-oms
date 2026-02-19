@@ -1,0 +1,12 @@
+E:\fabric-oms\application\backend\src\main\java\com\oms\audit\repository\AuditLogRepository.java
+E:\fabric-oms\application\backend\src\main\java\com\oms\audit\repository\ServerInfoRepository.java
+E:\fabric-oms\application\backend\src\main\java\com\oms\audit\repository\UserRepository.java
+E:\fabric-oms\application\backend\src\main\java\com\oms\audit\service\LogSyncService.java
+E:\fabric-oms\application\backend\src\main\java\com\oms\audit\controller\AuditController.java
+E:\fabric-oms\application\backend\src\main\java\com\oms\audit\entity\ServerInfo.java
+E:\fabric-oms\application\backend\src\main\java\com\oms\audit\OmsApplication.java
+E:\fabric-oms\application\backend\src\main\java\com\oms\audit\entity\User.java
+E:\fabric-oms\application\backend\src\main\java\com\oms\audit\service\FabricService.java
+E:\fabric-oms\application\backend\src\main\java\com\oms\audit\controller\ServerController.java
+E:\fabric-oms\application\backend\src\main\java\com\oms\audit\controller\AuthController.java
+E:\fabric-oms\application\backend\src\main\java\com\oms\audit\entity\AuditLog.java
