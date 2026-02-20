@@ -1,21 +1,26 @@
 package com.oms.audit.service;
 
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
 import com.oms.audit.entity.AuditLog;
+import com.oms.audit.entity.ServerInfo;
 import com.oms.audit.repository.AuditLogRepository;
+import com.oms.audit.repository.ServerInfoRepository;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.UUID;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,7 +28,7 @@ import java.util.regex.Pattern;
 public class LogSyncService {
 
     @Value("${audit.log.path}")
-    private String logFilePath;
+    private String logFilePath; // Remote path, e.g., /var/log/ssh_commands.log
 
     @Autowired
     private FabricService fabricService;
@@ -31,109 +36,103 @@ public class LogSyncService {
     @Autowired
     private AuditLogRepository auditLogRepository;
 
-    private long lastFilePointer = 0;
+    @Autowired
+    private ServerInfoRepository serverInfoRepository;
 
-    private static final String POINTER_FILE = "log_pointer.dat";
-
-    @PostConstruct
-    public void init() {
-        try {
-            if (Files.exists(Paths.get(POINTER_FILE))) {
-                try (RandomAccessFile pointerFile = new RandomAccessFile(POINTER_FILE, "r")) {
-                    lastFilePointer = pointerFile.readLong();
-                }
-            } else {
-                // If no pointer file, start from end of log file to avoid re-processing
-                if (Files.exists(Paths.get(logFilePath))) {
-                    try (RandomAccessFile file = new RandomAccessFile(logFilePath, "r")) {
-                        lastFilePointer = file.length();
-                        savePointer(lastFilePointer);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+    @Scheduled(fixedRate = 10000) // Every 10 seconds
+    public void syncLogs() {
+        List<ServerInfo> servers = serverInfoRepository.findAll();
+        for (ServerInfo server : servers) {
+            syncServerLogs(server);
         }
     }
 
-    @Scheduled(fixedRate = 5000)
-    public void syncLogs() {
-        if (!Files.exists(Paths.get(logFilePath))) {
+    private void syncServerLogs(ServerInfo server) {
+        if (server.getIp() == null || server.getSshUser() == null || server.getSshPassword() == null) {
             return;
         }
 
-        try (RandomAccessFile file = new RandomAccessFile(logFilePath, "r")) {
-            long fileLength = file.length();
-            if (fileLength < lastFilePointer) {
-                // File was truncated
-                lastFilePointer = 0;
+        JSch jsch = new JSch();
+        Session session = null;
+        ChannelExec channel = null;
+
+        try {
+            session = jsch.getSession(server.getSshUser(), server.getIp(), 22);
+            session.setPassword(server.getSshPassword());
+            session.setConfig("StrictHostKeyChecking", "no");
+            session.connect(5000);
+
+            // Command to read from the last offset
+            // tail -c +<offset+1> file
+            long offset = server.getLastLogOffset();
+            String command = "tail -c +" + (offset + 1) + " " + logFilePath;
+
+            channel = (ChannelExec) session.openChannel("exec");
+            channel.setCommand(command);
+
+            InputStream in = channel.getInputStream();
+            channel.connect();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+            String line;
+            long bytesRead = 0;
+
+            while ((line = reader.readLine()) != null) {
+                // tail outputs lines. We need to estimate bytes read to update offset.
+                // Note: This is an approximation if encoding varies, but for UTF-8/ASCII log lines it's generally close.
+                // Ideally, we'd count bytes directly from stream, but readLine consumes them.
+                // We add line length + 1 (for newline).
+                byte[] lineBytes = (line + "\n").getBytes(StandardCharsets.UTF_8);
+                bytesRead += lineBytes.length;
+                
+                processLogLine(line, server.getIp());
             }
 
-            if (fileLength > lastFilePointer) {
-                file.seek(lastFilePointer);
-                String line;
-                while ((line = file.readLine()) != null) {
-                    // RandomAccessFile reads bytes, need to decode
-                    String decodedLine = new String(line.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
-                    processLogLine(decodedLine);
-                }
-                lastFilePointer = file.getFilePointer();
-                savePointer(lastFilePointer);
+            if (bytesRead > 0) {
+                server.setLastLogOffset(offset + bytesRead);
+                serverInfoRepository.save(server);
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("Error syncing logs from " + server.getIp() + ": " + e.getMessage());
+        } finally {
+            if (channel != null) channel.disconnect();
+            if (session != null) session.disconnect();
         }
     }
 
-    private void savePointer(long pointer) {
-        try (RandomAccessFile pointerFile = new RandomAccessFile(POINTER_FILE, "rw")) {
-            pointerFile.seek(0);
-            pointerFile.writeLong(pointer);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void processLogLine(String line) {
+    private void processLogLine(String line, String serverIp) {
         if (line == null || line.trim().isEmpty()) {
             return;
         }
 
         // Format: 2026-01-27 10:10:00 | SSH_IP:192.168.1.100 | USER:ubuntu | PWD:/home/ubuntu | COMMAND:ls
-        // Regex to parse
         String regex = "^(.*?)\\s\\|\\sSSH_IP:(.*?)\\s\\|\\sUSER:(.*?)\\s\\|\\sPWD:(.*?)\\s\\|\\sCOMMAND:(.*)$";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(line);
 
         if (matcher.find()) {
             String timestamp = matcher.group(1);
-            String ip = matcher.group(2);
+            String clientIp = matcher.group(2); // Client IP
             String user = matcher.group(3);
             String pwd = matcher.group(4);
             String command = matcher.group(5);
 
             AuditLog log = new AuditLog();
-            String hash = calculateHash(line);
-            log.setId(hash); // Use hash as ID to prevent duplicates
+            String hash = calculateHash(line + serverIp); // Include serverIp in hash for uniqueness across servers
+            log.setId(hash);
             log.setTimestamp(timestamp);
-            log.setIp(ip);
+            log.setIp(clientIp);
+            log.setServerIp(serverIp);
             log.setUser(user);
             log.setPwd(pwd);
             log.setCommand(command);
             log.setHash(hash);
-            
-            // Default sensitive to false, let Fabric decide
             log.setSensitive(false);
 
             try {
-                // Upload to Fabric (simulated or real)
-                // FabricService should return the updated log with IsSensitive status from chaincode
                 AuditLog processedLog = fabricService.uploadLog(log);
-                
-                // Save to local DB
                 auditLogRepository.save(processedLog);
-                
             } catch (Exception e) {
                 System.err.println("Error processing log line: " + line + " Error: " + e.getMessage());
             }

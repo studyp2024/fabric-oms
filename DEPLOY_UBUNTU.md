@@ -194,10 +194,11 @@
         ```
     *验证*: 使用 `ls -l <路径>` 确保配置文件中填写的路径真实存在。
 
-2.  **日志文件设置**:
-    *   确保目标日志文件存在 (例如 `/var/log/ssh_commands.log`)。
-    *   更新 `application.properties` 中的 `audit.log.path` 指向该文件。
-    *   **权限**: 确保运行 Java 程序的用户对该文件有读取权限。
+2.  **日志同步配置 (多服务器支持)**:
+    *   系统现在支持通过 SSH 从多台远程服务器拉取日志。
+    *   **配置**: 在 `application.properties` 中设置 `audit.log.path` 为**远程服务器上**的日志文件绝对路径（例如 `/var/log/ssh_commands.log`）。
+    *   **添加服务器**: 系统启动后，管理员需要在系统界面（或直接通过数据库）添加目标服务器信息（IP、SSH用户名、SSH密码）。
+    *   **原理**: 后端会定期遍历所有已添加的服务器，建立 SSH 连接，读取指定的日志文件，并增量同步到区块链。
     *验证*:
     ```bash
     touch /var/log/ssh_commands.log
@@ -219,7 +220,43 @@
         # 预期输出: tcp6 0 0 :::8080 LISTEN
         ```
 
-## 6. 前端部署
+## 6. 目标服务器配置 (日志源)
+
+为了让审计系统能够收集远程服务器的操作日志，你需要在**每一台**被监控的服务器上执行以下配置步骤。
+
+1.  **分发配置脚本**:
+    *   将项目中的 `scripts/setup_remote_logging.sh` 脚本上传到目标服务器。
+    *   例如使用 `scp`:
+        ```bash
+        scp scripts/setup_remote_logging.sh user@target-server-ip:/tmp/
+        ```
+
+2.  **执行配置脚本**:
+    *   登录目标服务器并以 sudo 权限运行脚本:
+        ```bash
+        ssh user@target-server-ip
+        cd /tmp
+        chmod +x setup_remote_logging.sh
+        sudo ./setup_remote_logging.sh
+        ```
+    *   **脚本功能说明**:
+        *   配置 `rsyslog` 将 `local6` 级别的日志写入 `/var/log/ssh_commands.log`。
+        *   修改 `/etc/profile` 添加 `PROMPT_COMMAND`，用于捕获每个用户的命令操作并发送到 `rsyslog`。
+        *   设置日志文件权限，允许 SSH 用户读取。
+
+3.  **验证配置**:
+    *   注销并重新登录目标服务器（确保 `/etc/profile` 生效）。
+    *   执行几个命令（如 `ls`, `whoami`）。
+    *   检查日志文件是否生成:
+        ```bash
+        tail -f /var/log/ssh_commands.log
+        ```
+    *   **预期输出**: 应该看到类似以下的日志条目:
+        ```text
+        2024-05-20 10:00:00 | SSH_IP:192.168.1.5 | USER:ubuntu | PWD:/home/ubuntu | COMMAND:ls
+        ```
+
+## 7. 前端部署
 
 1.  **安装依赖并构建**:
     ```bash

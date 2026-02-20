@@ -9,7 +9,8 @@
       <thead>
         <tr>
           <th>Timestamp</th>
-          <th>IP</th>
+          <th>Server IP</th>
+          <th>Client IP</th>
           <th>User</th>
           <th>Command</th>
           <th>Status</th>
@@ -18,6 +19,7 @@
       <tbody>
         <tr v-for="log in logs" :key="log.id" :class="{ sensitive: log.sensitive }">
           <td>{{ log.timestamp }}</td>
+          <td>{{ log.serverIp }}</td>
           <td>{{ log.ip }}</td>
           <td>{{ log.user }}</td>
           <td>{{ log.command }}</td>

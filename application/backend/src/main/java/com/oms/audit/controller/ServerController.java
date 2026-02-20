@@ -31,8 +31,8 @@ public class ServerController {
         return serverInfoRepository.save(server);
     }
 
-    @PutMapping("/{id}/assign/{userId}")
-    public ResponseEntity<?> assignServer(@PathVariable Long id, @PathVariable Long userId) {
+    @PutMapping("/{id}/assign")
+    public ResponseEntity<?> assignServer(@PathVariable Long id, @RequestParam(required = false) Long userId) {
         return serverInfoRepository.findById(id).map(server -> {
             server.setAssignedUserId(userId);
             return ResponseEntity.ok(serverInfoRepository.save(server));

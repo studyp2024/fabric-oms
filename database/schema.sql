@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS servers (
     ssh_user VARCHAR(255) NOT NULL,
     ssh_password VARCHAR(255) NOT NULL,
     assigned_user_id BIGINT,
+    last_log_offset BIGINT DEFAULT 0,
     FOREIGN KEY (assigned_user_id) REFERENCES users(id)
 );
 
@@ -21,6 +22,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     id VARCHAR(255) PRIMARY KEY,
     timestamp VARCHAR(255),
     ip VARCHAR(255),
+    server_ip VARCHAR(255),
     user VARCHAR(255),
     pwd VARCHAR(255),
     command TEXT,
@@ -32,4 +34,4 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 INSERT INTO users (username, password, role) VALUES ('admin', 'admin', 'ADMIN');
 INSERT INTO users (username, password, role) VALUES ('ops', 'ops', 'OPS');
 
-INSERT INTO servers (ip, ssh_user, ssh_password, assigned_user_id) VALUES ('192.168.1.100', 'ubuntu', 'password123', 2);
+INSERT INTO servers (ip, ssh_user, ssh_password, assigned_user_id, last_log_offset) VALUES ('192.168.1.100', 'ubuntu', 'password123', 2, 0);

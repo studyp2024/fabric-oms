@@ -12,7 +12,9 @@ public class AuditLog {
 
     private String timestamp;
 
-    private String ip;
+    private String ip; // Client IP (who connected)
+
+    private String serverIp; // Target Server IP (where command ran)
 
     private String user;
 

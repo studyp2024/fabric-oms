@@ -18,6 +18,7 @@ type AuditLog struct {
 	ID          string `json:"id"`
 	Timestamp   string `json:"timestamp"`
 	IP          string `json:"ip"`
+	ServerIP    string `json:"serverIp"`
 	User        string `json:"user"`
 	PWD         string `json:"pwd"`
 	Command     string `json:"command"`
@@ -31,7 +32,7 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 }
 
 // CreateLog adds a new log to the world state with given details
-func (s *SmartContract) CreateLog(ctx contractapi.TransactionContextInterface, id string, timestamp string, ip string, user string, pwd string, command string, hash string) (*AuditLog, error) {
+func (s *SmartContract) CreateLog(ctx contractapi.TransactionContextInterface, id string, timestamp string, ip string, serverIp string, user string, pwd string, command string, hash string) (*AuditLog, error) {
 	exists, err := s.LogExists(ctx, id)
 	if err != nil {
 		return nil, err
@@ -46,6 +47,7 @@ func (s *SmartContract) CreateLog(ctx contractapi.TransactionContextInterface, i
 		ID:          id,
 		Timestamp:   timestamp,
 		IP:          ip,
+		ServerIP:    serverIp,
 		User:        user,
 		PWD:         pwd,
 		Command:     command,

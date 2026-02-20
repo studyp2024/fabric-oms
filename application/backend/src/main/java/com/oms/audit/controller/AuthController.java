@@ -32,4 +32,9 @@ public class AuthController {
         }
         return ResponseEntity.ok(userRepository.save(user));
     }
+
+    @GetMapping("/users")
+    public ResponseEntity<?> getAllUsers() {
+        return ResponseEntity.ok(userRepository.findAll());
+    }
 }

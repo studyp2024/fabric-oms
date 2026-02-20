@@ -99,6 +99,7 @@ public class FabricService {
                 log.getId(),
                 log.getTimestamp(),
                 log.getIp(),
+                log.getServerIp(),
                 log.getUser(),
                 log.getPwd(),
                 log.getCommand(),

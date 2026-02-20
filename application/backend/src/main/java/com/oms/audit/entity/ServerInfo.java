@@ -19,4 +19,8 @@ public class ServerInfo {
 
     // The user assigned to manage this server
     private Long assignedUserId;
+
+    // Track the last read byte offset of the log file on this server
+    @Column(columnDefinition = "bigint default 0")
+    private long lastLogOffset = 0;
 }
