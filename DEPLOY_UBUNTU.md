@@ -89,16 +89,26 @@
 
 ### 2.7 安装 Node.js & npm (前端构建必需)
 
-1.  **执行命令**:
+> **注意**: 本项目前端构建工具 Vite 需要 Node.js 版本 **>= 18.0.0**。Ubuntu 默认源中的版本可能过旧 (v10/v12)，会导致构建失败 (`SyntaxError: Unexpected reserved word`)。请务必使用以下命令安装最新版。
+
+1.  **清理旧版本 (如果存在)**:
+    ```bash
+    sudo apt-get remove -y nodejs
+    sudo apt-get autoremove -y
+    sudo rm -f /etc/apt/sources.list.d/nodesource.list
+    ```
+
+2.  **安装 Node.js 18.x**:
     ```bash
     curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
     sudo apt-get install -y nodejs
     ```
-2.  **验证**:
+
+3.  **验证**:
     ```bash
     node -v
-    npm -v
-    # 预期输出: v18.x.x 和 9.x.x (或类似版本)
+    # 必须输出: v18.x.x (例如 v18.19.0)
+    # 如果显示 v12.x.x，说明安装未成功，请检查上述步骤是否报错。
     ```
 
 ### 2.8 安装 MySQL (数据库)
@@ -164,20 +174,64 @@
     ```
 
 3.  **部署链码 (Chaincode)**:
-    *   将项目中的链码复制到 fabric-samples 目录:
-    ```bash
-    # 假设项目代码在 ~/fabric-oms
-    cp -r ~/fabric-oms/blockchain/chaincode/audit ~/fabric/fabric-samples/chaincode/
-    ```
-    *   部署链码到通道:
-    ```bash
-    ./network.sh deployCC -ccn audit -ccp ../chaincode/audit -ccl go
-    ```
-    *验证*:
-    ```bash
-    docker ps | grep dev-peer
-    # 预期输出: 应该看到以 dev-peer0.org1... 开头的链码容器正在运行
-    ```
+    
+    我们将使用 Fabric 官方提供的 `network.sh` 脚本来自动化部署流程（打包 -> 安装 -> 批准 -> 提交）。
+
+    *   **准备链码**:
+        为了避免路径权限问题，建议将链码复制到 `fabric-samples` 的标准链码目录下：
+        ```bash
+        # 1. 清理旧的链码（如果有）
+        rm -rf ~/fabric/fabric-samples/chaincode/audit
+
+        # 2. 复制最新代码
+        cp -r ~/fabric-oms/blockchain/chaincode/audit ~/fabric/fabric-samples/chaincode/
+        ```
+
+    *   **执行部署**:
+        切换到测试网络目录并运行部署命令：
+        ```bash
+        cd ~/fabric/fabric-samples/test-network
+        
+        # 首次部署 (版本 1.0, 序列号 1)
+        ./network.sh deployCC -ccn audit -ccp ../chaincode/audit -ccl go -ccv 1.0 -ccs 1
+        ```
+        *   `-ccn`: 链码名称 (chaincode name) -> `audit`
+        *   `-ccp`: 链码路径 (chaincode path) -> `../chaincode/audit`
+        *   `-ccl`: 语言 (language) -> `go`
+        *   `-ccv`: 版本号 (label version)
+        *   `-ccs`: 序列号 (sequence) - **重要**: 每次更新代码重新部署时，必须增加此数字 (如 2, 3...)
+
+    *   **更新/重新部署链码**:
+        如果你修改了 Go 代码并需要更新链码，请执行：
+        ```bash
+        # 1. 再次复制最新代码
+        cp -r ~/fabric-oms/blockchain/chaincode/audit ~/fabric/fabric-samples/chaincode/
+        
+        # 2. 部署新版本 (注意 -ccs 2)
+        ./network.sh deployCC -ccn audit -ccp ../chaincode/audit -ccl go -cqv 2.0 -ccs 2
+        ```
+
+    *   **验证**:
+        检查链码容器是否启动：
+        ```bash
+        docker ps | grep dev-peer
+        # 预期输出: 应该看到 dev-peer0.org1.example.com-audit-1.0... 和 dev-peer0.org2...
+        ```
+
+    *   **设置环境变量以使用 CLI 测试 (可选)**:
+        如果你想在命令行直接调用链码进行测试：
+        ```bash
+        export PATH=${PWD}/../bin:$PATH
+        export FABRIC_CFG_PATH=$PWD/../config/
+        export CORE_PEER_TLS_ENABLED=true
+        export CORE_PEER_LOCALMSPID="Org1MSP"
+        export CORE_PEER_TLS_ROOTCERT_FILE=${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+        export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+        export CORE_PEER_ADDRESS=localhost:7051
+        
+        # 调用 InitLedger (如果合约中有)
+        peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" -C mychannel -n audit --peerAddresses localhost:7051 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" --peerAddresses localhost:9051 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" -c '{"function":"InitLedger","Args":[]}'
+        ```
 
 ## 5. 后端部署
 
