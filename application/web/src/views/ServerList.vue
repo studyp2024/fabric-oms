@@ -15,7 +15,12 @@
 
     <div class="card-container">
       <div v-for="server in servers" :key="server.id" class="card">
-        <h3>{{ server.ip }}</h3>
+        <div class="card-header">
+          <h3>{{ server.ip }}</h3>
+          <span :class="['status-badge', server.status === 'ONLINE' ? 'online' : 'offline']">
+            {{ server.status || 'OFFLINE' }}
+          </span>
+        </div>
         <p><strong>SSH User:</strong> {{ server.sshUser }}</p>
         <p><strong>SSH Password:</strong> {{ server.sshPassword }}</p>
         
@@ -106,20 +111,50 @@ export default {
 
 <style scoped>
 .server-list {
-  padding: 1rem;
+  padding: 20px;
 }
+
 .card-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
 }
+
 .card {
   background: white;
-  padding: 1rem;
+  padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  width: 300px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+.status-badge.online {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-badge.offline {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+h3 {
+  margin: 0;
+  color: #2c3e50;
 }
 .actions {
   margin-top: 1rem;

@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS servers (
     ssh_password VARCHAR(255) NOT NULL,
     assigned_user_id BIGINT,
     last_log_offset BIGINT DEFAULT 0,
+    status VARCHAR(20) DEFAULT 'OFFLINE',
     FOREIGN KEY (assigned_user_id) REFERENCES users(id)
 );
 

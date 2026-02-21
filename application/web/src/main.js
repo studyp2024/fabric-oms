@@ -5,6 +5,7 @@ import Login from './views/Login.vue'
 import Dashboard from './views/Dashboard.vue'
 import ServerList from './views/ServerList.vue'
 import AuditLogs from './views/AuditLogs.vue'
+import UserList from './views/UserList.vue'
 
 const routes = [
   { path: '/', component: Login },
@@ -13,7 +14,8 @@ const routes = [
     component: Dashboard,
     children: [
       { path: 'servers', component: ServerList },
-      { path: 'logs', component: AuditLogs }
+      { path: 'logs', component: AuditLogs },
+      { path: 'users', component: UserList }
     ]
   }
 ]

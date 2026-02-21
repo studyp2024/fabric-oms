@@ -27,6 +27,17 @@
         </tr>
       </tbody>
     </table>
+
+    <div class="pagination">
+      <button @click="prevPage" :disabled="currentPage === 0">Previous</button>
+      <span>Page {{ currentPage + 1 }} of {{ totalPages }}</span>
+      <button @click="nextPage" :disabled="currentPage >= totalPages - 1">Next</button>
+      <select v-model="pageSize" @change="handlePageSizeChange">
+        <option :value="10">10 per page</option>
+        <option :value="20">20 per page</option>
+        <option :value="50">50 per page</option>
+      </select>
+    </div>
   </div>
 </template>
 
@@ -38,7 +49,11 @@ export default {
     return {
       logs: [],
       searchQuery: '',
-      onlySensitive: false
+      onlySensitive: false,
+      currentPage: 0,
+      pageSize: 10,
+      totalPages: 0,
+      totalElements: 0
     };
   },
   async mounted() {
@@ -48,18 +63,44 @@ export default {
     async fetchLogs() {
       try {
         let url = '/api/audit';
+        const params = {
+          page: this.currentPage,
+          size: this.pageSize
+        };
+
         if (this.onlySensitive) {
           url = '/api/audit/sensitive';
         } else if (this.searchQuery) {
-          url = `/api/audit/search?q=${this.searchQuery}`;
+          url = '/api/audit/search';
+          params.q = this.searchQuery;
         }
-        const response = await axios.get(url);
-        this.logs = response.data;
+        
+        const response = await axios.get(url, { params });
+        this.logs = response.data.content;
+        this.totalPages = response.data.totalPages;
+        this.totalElements = response.data.totalElements;
       } catch (error) {
         console.error('Failed to fetch logs:', error);
       }
     },
     search() {
+      this.currentPage = 0;
+      this.fetchLogs();
+    },
+    prevPage() {
+      if (this.currentPage > 0) {
+        this.currentPage--;
+        this.fetchLogs();
+      }
+    },
+    nextPage() {
+      if (this.currentPage < this.totalPages - 1) {
+        this.currentPage++;
+        this.fetchLogs();
+      }
+    },
+    handlePageSizeChange() {
+      this.currentPage = 0;
       this.fetchLogs();
     }
   }
@@ -90,6 +131,29 @@ th {
   margin-bottom: 1rem;
 }
 input {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.pagination {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  border-radius: 4px;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+select {
   padding: 0.5rem;
   border: 1px solid #ddd;
   border-radius: 4px;

@@ -23,4 +23,6 @@ public class ServerInfo {
     // Track the last read byte offset of the log file on this server
     @Column(columnDefinition = "bigint default 0")
     private long lastLogOffset = 0;
+
+    private String status = "OFFLINE"; // ONLINE, OFFLINE
 }

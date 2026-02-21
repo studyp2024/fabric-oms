@@ -3,8 +3,9 @@
     <div class="sidebar">
       <h2>Audit System</h2>
       <nav>
-        <router-link to="/dashboard/servers">My Servers</router-link>
+        <router-link to="/dashboard/servers">Servers</router-link>
         <router-link to="/dashboard/logs">Audit Logs</router-link>
+        <router-link to="/dashboard/users" v-if="user.role === 'ADMIN'">User Management</router-link>
       </nav>
       <div class="user-info">
         <p>{{ user.username }} ({{ user.role }})</p>

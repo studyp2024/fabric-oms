@@ -3,9 +3,11 @@ package com.oms.audit.controller;
 import com.oms.audit.entity.AuditLog;
 import com.oms.audit.repository.AuditLogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/audit")
@@ -16,17 +18,27 @@ public class AuditController {
     private AuditLogRepository auditLogRepository;
 
     @GetMapping
-    public List<AuditLog> getAllLogs() {
-        return auditLogRepository.findAllByOrderByTimestampDesc();
+    public Page<AuditLog> getAllLogs(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("timestamp").descending());
+        return auditLogRepository.findAll(pageable);
     }
 
     @GetMapping("/sensitive")
-    public List<AuditLog> getSensitiveLogs() {
-        return auditLogRepository.findByIsSensitiveTrue();
+    public Page<AuditLog> getSensitiveLogs(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("timestamp").descending());
+        return auditLogRepository.findByIsSensitiveTrue(pageable);
     }
 
     @GetMapping("/search")
-    public List<AuditLog> searchLogs(@RequestParam String q) {
-        return auditLogRepository.findByCommandContaining(q);
+    public Page<AuditLog> searchLogs(
+            @RequestParam String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("timestamp").descending());
+        return auditLogRepository.findByCommandContaining(q, pageable);
     }
 }
