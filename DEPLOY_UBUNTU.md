@@ -26,7 +26,6 @@
 ### 2.1 自动化部署 (推荐)
 
 使用 `deploy.sh` 脚本可以自动完成以下任务：
-*   更新系统软件源
 *   安装基础工具 (curl, git, jq 等)
 *   安装并配置 Docker & Docker Compose
 *   安装 Go 语言环境 (使用国内镜像)
@@ -38,19 +37,25 @@
 
 **操作步骤**:
 
-1.  **赋予脚本执行权限**:
+1.  **手动更新系统 (重要)**:
+    为了避免脚本执行过程中因后台更新锁定导致失败，请先手动更新系统：
+    ```bash
+    sudo apt-get update && sudo apt-get upgrade -y
+    ```
+    *注意*: 如果遇到锁错误 (`Could not get lock ...`), 请等待后台 `unattended-upgr` 进程结束。
+
+2.  **赋予脚本执行权限**:
     ```bash
     chmod +x deploy.sh
     ```
 
-2.  **运行部署脚本**:
+3.  **运行部署脚本**:
     ```bash
     # 必须使用 sudo 或 root 权限运行
     sudo ./deploy.sh
     ```
-    *注意*: 脚本运行过程中会检测后台是否有系统更新进程 (unattended-upgr)，如果存在会暂时等待，请耐心候。
 
-3.  **脚本执行完毕后**:
+4.  **脚本执行完毕后**:
     当看到 `Environment Setup Complete!` 提示时，表示基础环境和项目构建已完成。接下来请直接跳转到 **第 4 章 Hyperledger Fabric 区块链网络搭建** 继续操作。
 
 ---

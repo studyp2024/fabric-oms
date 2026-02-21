@@ -21,23 +21,9 @@ DB_NAME="oms_db"
 DB_USER="root"
 DB_PASS="123456" # CHANGE THIS IN PRODUCTION
 
-# Function to wait for apt locks
-wait_for_locks() {
-    echo "Checking for background updates..."
-    while pgrep -f "unattended-upgr" >/dev/null || \
-          pgrep -f "apt.systemd.daily" >/dev/null || \
-          pgrep -f "apt-get" >/dev/null || \
-          pgrep -f "dpkg" >/dev/null; do
-        echo "Waiting for system updates/locks to release... (this may take a while)"
-        sleep 10
-    done
-}
-
-wait_for_locks
-
-# 1. Update System & Install Base Tools
-echo "[1/8] Updating system and installing base tools..."
-apt-get update && apt-get upgrade -y
+# 1. Install Base Tools
+echo "[1/8] Installing base tools..."
+# Note: Please run 'apt-get update' manually before this script if needed.
 apt-get install -y curl git build-essential unzip jq
 
 # 2. Install Docker & Docker Compose
