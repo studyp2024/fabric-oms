@@ -21,19 +21,55 @@
 
 ## 2. 环境准备
 
-你可以运行提供的 `deploy.sh` 脚本来安装大部分依赖，或者按照以下步骤手动安装。建议手动安装以确保每一步都正确无误。
+本项目提供了一个全自动化的部署脚本 `deploy.sh`，可以一键完成系统环境的初始化。
 
-### 2.1 更新系统
+### 2.1 自动化部署 (推荐)
+
+使用 `deploy.sh` 脚本可以自动完成以下任务：
+*   更新系统软件源
+*   安装基础工具 (curl, git, jq 等)
+*   安装并配置 Docker & Docker Compose
+*   安装 Go 语言环境 (使用国内镜像)
+*   安装 Java 8 & Maven
+*   安装 Node.js 18+
+*   安装并初始化 MySQL 数据库
+*   下载 Hyperledger Fabric 二进制文件和样例
+*   构建后端 (Java) 和前端 (Vue) 项目
+
+**操作步骤**:
+
+1.  **赋予脚本执行权限**:
+    ```bash
+    chmod +x deploy.sh
+    ```
+
+2.  **运行部署脚本**:
+    ```bash
+    # 必须使用 sudo 或 root 权限运行
+    sudo ./deploy.sh
+    ```
+    *注意*: 脚本运行过程中会检测后台是否有系统更新进程 (unattended-upgr)，如果存在会暂时等待，请耐心候。
+
+3.  **脚本执行完毕后**:
+    当看到 `Environment Setup Complete!` 提示时，表示基础环境和项目构建已完成。接下来请直接跳转到 **第 4 章 Hyperledger Fabric 区块链网络搭建** 继续操作。
+
+---
+
+### 2.2 手动安装 (可选)
+
+如果你无法使用自动化脚本，或者希望手动控制安装过程，请参考以下步骤。
+
+#### 2.2.1 更新系统
 ```bash
 sudo apt-get update && sudo apt-get upgrade -y
 ```
 
-### 2.2 安装基础工具
+#### 2.2.2 安装基础工具
 ```bash
 sudo apt-get install -y curl git build-essential unzip jq
 ```
 
-### 2.3 安装 Docker & Docker Compose
+#### 2.2.3 安装 Docker & Docker Compose
 Hyperledger Fabric 运行必需。
 ```bash
 sudo apt-get install -y docker.io docker-compose
@@ -42,7 +78,7 @@ sudo usermod -aG docker $USER
 ```
 *验证*: `docker run hello-world`
 
-### 2.4 安装 Go 语言环境
+#### 2.2.4 安装 Go 语言环境
 链码开发必需。
 
 ```bash
@@ -70,14 +106,14 @@ go env -w GOPROXY=https://goproxy.cn,direct
 ```
 *验证*: `go version`
 
-### 2.5 安装 Java 8 & Maven
+#### 2.2.5 安装 Java 8 & Maven
 后端服务必需。
 ```bash
 sudo apt-get install -y openjdk-8-jdk maven
 ```
 *验证*: `java -version` (应输出 1.8.x), `mvn -version`
 
-### 2.6 安装 Node.js 18+
+#### 2.2.6 安装 Node.js 18+
 前端构建必需。
 > **注意**: 必须安装 Node.js 18 或更高版本，否则 Vite 构建会失败。
 ```bash
@@ -86,7 +122,7 @@ sudo apt-get install -y nodejs
 ```
 *验证*: `node -v` (应输出 v18.x.x)
 
-### 2.7 安装 MySQL
+#### 2.2.7 安装 MySQL
 ```bash
 sudo apt-get install -y mysql-server
 sudo systemctl start mysql
@@ -303,7 +339,7 @@ sudo systemctl restart nginx
     2.  **部署链码**:
         ```bash
         # 注意: 如果是全新启动，序列号(-ccs)可以是 1。如果是升级，必须增加序列号。
-        ./network.sh deployCC -ccn audit -ccp ../chaincode/audit -ccl go -ccv 1.0 -ccs 1
+        ./network.sh deployCC -ccn audit -ccp /fabric-oms/blockchain/chaincode/audit -ccl go -ccv 1.0 -ccs 1
         ```
     3.  **更新证书配置 (关键)**:
         *   进入 `/fabric-oms/blockchain/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/keystore/`
