@@ -153,25 +153,19 @@ cd /fabric-oms/blockchain/fabric-samples/test-network
 ### 4.3 部署链码 (Chaincode)
 我们将部署名为 `audit` 的链码。
 
-1.  **复制链码到标准目录** (防止路径权限问题):
-    ```bash
-    # 确保目标目录存在
-    mkdir -p /fabric-oms/blockchain/fabric-samples/chaincode
-    
-    # 复制你的链码
-    cp -r /fabric-oms/blockchain/chaincode/audit /fabric-oms/blockchain/fabric-samples/chaincode/
-    ```
+**执行部署**:
 
-2.  **执行部署**:
-    ```bash
-    cd /fabric-oms/blockchain/fabric-samples/test-network
-    
-    # 部署版本 1.0, 序列号 1
-    ./network.sh deployCC -ccn audit -ccp ../chaincode/audit -ccl go -ccv 1.0 -ccs 1
-    ```
-    *   `-ccn`: 链码名称
-    *   `-ccp`: 链码路径
-    *   `-ccs`: 序列号 (**重要**: 每次更新代码重新部署时，必须增加此数字，如 2, 3...)
+```bash
+cd /fabric-oms/blockchain/fabric-samples/test-network
+
+# 部署版本 1.0, 序列号 1
+# -ccp 参数指定链码的绝对路径
+./network.sh deployCC -ccn audit -ccp /fabric-oms/blockchain/chaincode/audit -ccl go -ccv 1.0 -ccs 1
+```
+
+*   `-ccn`: 链码名称
+*   `-ccp`: 链码路径 (使用绝对路径)
+*   `-ccs`: 序列号 (**重要**: 每次更新代码重新部署时，必须增加此数字，如 2, 3...)
 
 ---
 
