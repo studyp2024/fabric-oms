@@ -14,7 +14,7 @@
 ## 1. 系统要求
 
 *   **操作系统**: Ubuntu 22.04 LTS
-*   **硬件配置**: 至少 4GB 内存, 2 核 CPU, 20GB 磁盘空间
+*   **硬件配置**: 至少 4GB 内存, 2 核 CPU, 20GB 磁盘空间 （本人测试使用 8GB 内存, 8 核 CPU, 20GB 磁盘空间）
 *   **用户权限**: Root 用户或具有 sudo 权限的用户
 
 ---
@@ -40,12 +40,13 @@
 1.  **手动更新系统 (重要)**:
     为了避免脚本执行过程中因后台更新锁定导致失败，请先手动更新系统：
     ```bash
-    sudo apt-get update && sudo apt-get upgrade -y
+    sudo apt-get update
     ```
     *注意*: 如果遇到锁错误 (`Could not get lock ...`), 请等待后台 `unattended-upgr` 进程结束。
 
 2.  **赋予脚本执行权限**:
     ```bash
+    cd /fabric-oms // 切换到项目根目录
     chmod +x deploy.sh
     ```
 
@@ -56,7 +57,7 @@
     ```
 
 4.  **脚本执行完毕后**:
-    当看到 `Environment Setup Complete!` 提示时，表示基础环境和项目构建已完成。接下来请直接跳转到 **第 4 章 Hyperledger Fabric 区块链网络搭建** 继续操作。
+    当看到 `Environment Setup Complete!` 提示时，表示基础环境和项目构建已完成。接下来请直接跳转到 ** 第4章 4.2 启动测试网络 ** 继续操作。
 
 ---
 
@@ -186,7 +187,6 @@ curl -sSLO https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/ins
 ### 4.2 启动测试网络
 ```bash
 cd /fabric-oms/blockchain/fabric-samples/test-network
-./network.sh down
 ./network.sh up createChannel -c mychannel -ca
 ```
 *验证*: `docker ps` 应看到 peer0.org1, peer0.org2, orderer 等容器。
@@ -237,7 +237,7 @@ fabric.tlsCertPath=/fabric-oms/blockchain/fabric-samples/test-network/organizati
 ### 5.2 构建并运行
 ```bash
 cd /fabric-oms/application/backend
-mvn clean package -DskipTests
+mvn clean package -DskipTests // 使用了部署脚本可忽略此步骤
 java -jar target/audit-0.0.1-SNAPSHOT.jar
 ```
 后端将在 `http://localhost:8080` 启动。
@@ -246,7 +246,7 @@ java -jar target/audit-0.0.1-SNAPSHOT.jar
 
 ## 6. 前端部署 (Nginx)
 
-### 6.1 构建前端
+### 6.1 构建前端 //运行了部署脚本可忽略此步骤
 ```bash
 cd /fabric-oms/application/web
 npm install

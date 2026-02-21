@@ -65,18 +65,53 @@
     *   *注意*: 无法删除 admin 账号本身。
 
 ## 4. 目标服务器日志配置
-为了让系统能收集到目标服务器的日志，需要在目标服务器上执行配置脚本。
 
-1.  **获取脚本**: 从项目代码库中获取 `scripts/setup_remote_logging.sh`。
-2.  **在目标服务器执行**:
+为了让系统能收集到目标服务器的操作日志，需要在**每台被纳管的目标服务器**上执行配置脚本。该脚本会配置 SSH 会话记录功能。
+
+**注意**: 目标服务器**无需**克隆整个项目代码，只需获取配置脚本即可。
+
+### 4.1 获取并上传脚本
+
+1.  **获取脚本**: 在本项目代码库中找到 `scripts/setup_remote_logging.sh` 文件。
+2.  **上传至目标服务器**:
+    *   使用 WinSCP、FileZilla 或 `scp` 命令将该脚本上传到目标服务器的任意目录 (例如 `/tmp` 或 `/home/user`)。
+    *   *示例 (使用 scp)*:
+        ```bash
+        scp scripts/setup_remote_logging.sh user@target-server-ip:/tmp/
+        ```
+
+### 4.2 执行配置脚本
+
+登录到目标服务器，执行以下命令：
+
+```bash
+# 1. 进入脚本所在目录
+cd /tmp
+
+# 2. 使用 root 权限运行脚本
+sudo bash setup_remote_logging.sh
+```
+
+**脚本执行内容说明**:
+*   修改 `/etc/bash.bashrc`，添加 `PROMPT_COMMAND` 以实时记录所有用户的 SSH 命令。
+*   创建日志文件 `/var/log/ssh_commands.log`。
+*   设置权限为 `660` (root:users)，确保安全且可读。
+
+### 4.3 验证配置
+
+脚本执行完成后，新的 SSH 会话将自动生效。你可以通过以下方式验证：
+
+1.  **重新登录 SSH** 或执行 `source /etc/bash.bashrc`。
+2.  执行几条命令 (如 `ls`, `pwd`)。
+3.  查看日志文件:
     ```bash
-    # 将脚本上传到目标服务器，然后运行
-    sudo bash setup_remote_logging.sh
+    tail -f /var/log/ssh_commands.log
     ```
-3.  **验证**: 执行完脚本后，在该服务器上的操作命令将被记录到 `/var/log/ssh_commands.log`，并由审计系统定期采集。
+    你应该能看到类似以下的日志记录：
+    `2023-10-27 10:00:00 | SSH_IP:192.168.1.5 | USER:ops | PWD:/home/ops | COMMAND:ls -la`
 
 ## 5. 常见问题
 *   **日志未更新**: 
-    *   检查目标服务器的 `rsyslog` 服务是否正常。
+    *   检查目标服务器是否执行了配置脚本setup_remote_logging.sh。
     *   检查审计系统的后端服务是否运行。
     *   确认数据库中配置的 SSH 账号密码正确且有权限读取日志文件。
