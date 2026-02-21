@@ -90,6 +90,7 @@ node -v
 
 # 6. Setup MySQL
 echo "[6/8] Setting up MySQL..."
+apt-get install -y mysql-server
 systemctl start mysql
 systemctl enable mysql
 
