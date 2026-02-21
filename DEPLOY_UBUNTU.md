@@ -30,7 +30,7 @@ sudo apt-get update && sudo apt-get upgrade -y
 
 ### 2.2 安装基础工具
 ```bash
-sudo apt-get install -y curl git build-essential unzip
+sudo apt-get install -y curl git build-essential unzip jq
 ```
 
 ### 2.3 安装 Docker & Docker Compose
@@ -44,13 +44,31 @@ sudo usermod -aG docker $USER
 
 ### 2.4 安装 Go 语言环境
 链码开发必需。
+
 ```bash
-wget https://go.dev/dl/go1.20.10.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.20.10.linux-amd64.tar.gz
-echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
+# 1. 下载 Go (请根据最新版本调整)
+wget https://golang.google.cn/dl/go1.26.0.linux-amd64.tar.gz
+
+# 2. 将下载的二进制包解压至 /usr/local 目录
+sudo tar -C /usr/local -xzf go1.26.0.linux-amd64.tar.gz
+
+# 3. 创建工作目录
+mkdir -p $HOME/go
+
+# 4. 配置环境变量 (追加到 ~/.bashrc)
+echo 'export GOPATH=$HOME/go' >> ~/.bashrc
+echo 'export GOROOT=/usr/local/go' >> ~/.bashrc
+echo 'export PATH=$GOROOT/bin:$PATH' >> ~/.bashrc
+echo 'export PATH=$GOPATH/bin:$PATH' >> ~/.bashrc
+
+# 5. 使环境变量生效
 source ~/.bashrc
+
+# 6. 设置 Go 代理 (加速下载)
+go env -w GO111MODULE=on
+go env -w GOPROXY=https://goproxy.cn,direct
 ```
-*验证*: `go version` (应输出 go1.20.x)
+*验证*: `go version`
 
 ### 2.5 安装 Java 8 & Maven
 后端服务必需。
@@ -111,13 +129,18 @@ sudo systemctl enable mysql
 我们将使用项目自带的 `fabric-samples` (位于 `/fabric-oms/blockchain/fabric-samples`)。
 
 ### 4.1 准备环境
-确保你已下载了 Fabric 的二进制文件 (peer, orderer 等) 到 `bin` 目录。如果项目中缺少这些二进制文件，请执行：
+我们将使用项目自带的 `fabric-samples` (位于 `/fabric-oms/blockchain/fabric-samples`)。如果你还没有下载 Fabric 的相关文件，请使用以下命令：
+
 ```bash
 cd /fabric-oms/blockchain
-# 下载 Fabric 2.5.4 二进制文件
-curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.5.4 1.5.7 -s
-# -s 参数表示跳过克隆 fabric-samples 仓库 (因为我们已经有了)
+# 下载 Fabric 安装脚本
+curl -sSLO https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh && chmod +x install-fabric.sh
+
+# 运行脚本下载 Docker 镜像、Samples 和 二进制文件
+./install-fabric.sh docker samples binary
 ```
+
+*验证*: 检查 `bin` 目录是否存在且包含 `peer`, `orderer` 等文件。
 
 ### 4.2 启动测试网络
 ```bash
