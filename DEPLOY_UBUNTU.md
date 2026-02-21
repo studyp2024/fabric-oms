@@ -237,12 +237,27 @@
 
 1.  **配置应用程序**:
     *   编辑配置文件: `application/backend/src/main/resources/application.properties`
-    *   **关键步骤**: 更新 Fabric 证书路径。这些证书由 Test Network 生成。
-    *   通常路径在 `~/fabric/fabric-samples/test-network/organizations` 下。
-    *   你需要修改 `fabric.certPath`, `fabric.keyPath`, `fabric.tlsCertPath` 为你服务器上的绝对路径。
-    *   **示例**:
+    *   **关键说明**: 本系统默认配置为 **Org1** 的客户端 (`fabric.mspId=Org1MSP`)。因此，你只需要配置 **Org1** 下的用户证书即可，无需关心 Org2。
+    *   **配置路径**: 编辑 `application/backend/src/main/resources/application.properties`
+    *   **如何找到证书**:
+        在 `fabric-samples/test-network` 目录下，Test Network 生成的证书通常位于 `organizations` 文件夹中。
+        你需要修改以下三个参数，指向 **User1@org1.example.com** 的相关文件：
+
+        1.  `fabric.certPath`: 用户签名证书 (cert.pem)
+            *   路径模式: `.../organizations/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/signcerts/cert.pem`
+        2.  `fabric.keyPath`: 用户私钥 (文件名通常是一串哈希值_sk)
+            *   路径模式: `.../organizations/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/keystore/priv_sk` (注意：实际文件名可能不同，请使用 `ls` 查看)
+        3.  `fabric.tlsCertPath`: Peer 节点的 TLS CA 证书 (ca.crt)
+            *   路径模式: `.../organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt`
+
+    *   **示例配置 (请替换为你的实际绝对路径)**:
         ```properties
+        fabric.mspId=Org1MSP
+        fabric.peerEndpoint=localhost:7051
+        fabric.overrideAuth=peer0.org1.example.com
+        
         fabric.certPath=/home/ubuntu/fabric/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/signcerts/cert.pem
+        # 注意：下面的私钥文件名是动态生成的，每次部署都不同，请务必检查
         fabric.keyPath=/home/ubuntu/fabric/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/keystore/priv_sk
         fabric.tlsCertPath=/home/ubuntu/fabric/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
         ```
