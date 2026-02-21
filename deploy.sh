@@ -11,7 +11,7 @@ echo "=========================================================="
 
 # Check if running as root
 if [ "$EUID" -ne 0 ]; then
-  echo "Please run as root"
+  echo "Please run as root (e.g., sudo ./deploy.sh)"
   exit 1
 fi
 
@@ -20,54 +20,81 @@ DB_NAME="oms_db"
 DB_USER="root"
 DB_PASS="123456" # CHANGE THIS IN PRODUCTION
 
-# 1. Update System
-echo "[1/6] Updating system packages..."
+# 1. Update System & Install Base Tools
+echo "[1/6] Updating system and installing base tools..."
 apt-get update && apt-get upgrade -y
-apt-get install -y curl git build-essential openjdk-8-jdk maven nodejs npm mysql-server docker.io docker-compose
+apt-get install -y curl git build-essential openjdk-8-jdk maven mysql-server docker.io docker-compose
 
-# 2. Setup MySQL
-echo "[2/6] Setting up MySQL..."
+# 2. Install Node.js 18.x (Required for Vite)
+echo "[2/6] Installing Node.js 18.x..."
+if ! node -v | grep -q "v18"; then
+    echo "Current Node version is not 18.x. Installing/Updating..."
+    # Remove old version if exists
+    apt-get remove -y nodejs || true
+    apt-get autoremove -y || true
+    
+    # Install Node 18
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+    apt-get install -y nodejs
+else
+    echo "Node.js 18.x is already installed."
+fi
+node -v
+npm -v
+
+# 3. Setup MySQL
+echo "[3/6] Setting up MySQL..."
 systemctl start mysql
 systemctl enable mysql
 
 # Secure MySQL installation (Automated)
-# This is a basic setup. In production, use mysql_secure_installation manually.
-mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$DB_PASS';"
+echo "Configuring database..."
+mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$DB_PASS';" || true
 mysql -u$DB_USER -p$DB_PASS -e "CREATE DATABASE IF NOT EXISTS $DB_NAME;"
-mysql -u$DB_USER -p$DB_PASS < $PROJECT_ROOT/database/schema.sql
+mysql -u$DB_USER -p$DB_PASS $DB_NAME < $PROJECT_ROOT/database/schema.sql
 
-echo "Database initialized."
+echo "Database initialized with default users (admin/admin, ops/ops)."
 
-# 3. Setup Fabric Network (Placeholder)
-echo "[3/6] Setting up Hyperledger Fabric..."
-echo "NOTE: This script assumes you will manually deploy the Fabric network."
-echo "Please refer to the official Fabric documentation or samples to start a test network."
-echo "Once started, update application/backend/src/main/resources/application.properties with correct paths."
+# 4. Setup Fabric Network (Placeholder)
+echo "[4/6] Setting up Hyperledger Fabric..."
+echo "NOTE: This script prepares the environment. You MUST manually start the network."
+echo "Please follow 'DEPLOY_UBUNTU.md' -> Section 4 for detailed steps."
+echo "Command hint: cd blockchain/fabric-samples/test-network && ./network.sh up createChannel -c mychannel -ca"
 
-# 4. Build Backend
-echo "[4/6] Building Backend..."
-cd $PROJECT_ROOT/application/backend
-mvn clean package -DskipTests
+# 5. Build Backend
+echo "[5/6] Building Backend..."
+if [ -d "$PROJECT_ROOT/application/backend" ]; then
+    cd $PROJECT_ROOT/application/backend
+    mvn clean package -DskipTests
+else
+    echo "Error: Backend directory not found!"
+    exit 1
+fi
 
-# 5. Build Frontend
-echo "[5/6] Building Frontend..."
-cd $PROJECT_ROOT/application/web
-# Install nvm to get a newer node version if needed, but apt installed nodejs should be sufficient for simple vue apps
-# or use npm install -g n
-npm install
-npm run build
+# 6. Build Frontend
+echo "[6/6] Building Frontend..."
+if [ -d "$PROJECT_ROOT/application/web" ]; then
+    cd $PROJECT_ROOT/application/web
+    npm install
+    npm run build
+else
+    echo "Error: Frontend directory not found!"
+    exit 1
+fi
 
-# 6. Deployment Info
+# 7. Deployment Info
+echo ""
 echo "=========================================================="
 echo "   Deployment Preparation Complete!                       "
 echo "=========================================================="
 echo ""
-echo "To start the Backend:"
-echo "  cd $PROJECT_ROOT/application/backend"
-echo "  java -jar target/audit-0.0.1-SNAPSHOT.jar"
+echo "Next Steps:"
+echo "1. Start Fabric Network & Deploy Chaincode (See DEPLOY_UBUNTU.md)"
+echo "2. Update certificates path in: application/backend/src/main/resources/application.properties"
+echo "3. Run Backend:"
+echo "   cd application/backend"
+echo "   java -jar target/audit-0.0.1-SNAPSHOT.jar"
+echo "4. Run Frontend (Production):"
+echo "   Configure Nginx to serve 'application/web/dist' (See DEPLOY_UBUNTU.md)"
 echo ""
-echo "To serve the Frontend:"
-echo "  You can use Nginx to serve the 'dist' folder generated in application/web/dist"
-echo "  Or for development: cd $PROJECT_ROOT/application/web && npm run dev"
-echo ""
-echo "IMPORTANT: Ensure Hyperledger Fabric is running and certificates are configured in application.properties"
+echo "For more details, please read DEPLOY_UBUNTU.md"
