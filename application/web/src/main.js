@@ -7,6 +7,7 @@ import Dashboard from './views/Dashboard.vue'
 import ServerList from './views/ServerList.vue'
 import AuditLogs from './views/AuditLogs.vue'
 import UserList from './views/UserList.vue'
+import WebSsh from './views/WebSsh.vue'
 
 // 定义前端路由规则
 const routes = [
@@ -18,7 +19,8 @@ const routes = [
       // 控制台的子路由页面
       { path: 'servers', component: ServerList }, // 服务器列表页
       { path: 'logs', component: AuditLogs },     // 审计日志页
-      { path: 'users', component: UserList }      // 用户管理页
+      { path: 'users', component: UserList },     // 用户管理页
+      { path: 'ssh/:serverId', component: WebSsh } // WebSSH 终端页面
     ]
   }
 ]

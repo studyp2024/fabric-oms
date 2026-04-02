@@ -10,6 +10,7 @@
         <select v-model="newUser.role">
           <option value="OPS">Operator (OPS)</option>
           <option value="ADMIN">Administrator (ADMIN)</option>
+          <option value="AUDITOR">Auditor (AUDITOR)</option>
         </select>
         <button @click="addUser" class="btn-primary">Add User</button>
       </div>
@@ -158,6 +159,11 @@ th {
 .role-badge.ops {
   background-color: #e8f5e9;
   color: #2e7d32;
+}
+
+.role-badge.auditor {
+  background-color: #fff3e0;
+  color: #f57c00;
 }
 
 .btn-primary {

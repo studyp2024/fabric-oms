@@ -21,22 +21,32 @@
             {{ server.status || 'OFFLINE' }}
           </span>
         </div>
-        <p><strong>SSH User:</strong> {{ server.sshUser }}</p>
-        <p><strong>SSH Password:</strong> {{ server.sshPassword }}</p>
-        
-        <!-- Admin Assign User -->
-        <div v-if="isAdmin" class="assign-user">
-          <label>Assign to:</label>
-          <select v-model="server.assignedUserId" @change="assignUser(server)">
-            <option :value="null">Unassigned</option>
-            <option v-for="user in users" :key="user.id" :value="user.id">
-              {{ user.username }}
-            </option>
-          </select>
+
+        <!-- 只有管理员能看到密码信息和分配用户表单 -->
+        <div v-if="isAdmin">
+          <p><strong>SSH User:</strong> {{ server.sshUser }}</p>
+          <p><strong>SSH Password:</strong> *******</p>
+          
+          <div class="assign-user">
+            <label>Assign to:</label>
+            <select v-model="server.assignedUserId" @change="assignUser(server)">
+              <option :value="null">Unassigned</option>
+              <option v-for="user in users" :key="user.id" :value="user.id">
+                {{ user.username }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 运维人员只看到提示信息 -->
+        <div v-else>
+          <p style="color: #7f8c8d; font-size: 0.9em; margin-top: 10px;">
+            You are assigned to manage this server. Direct SSH login credentials are hidden for security reasons.
+          </p>
         </div>
 
         <div class="actions">
-          <button @click="copy(server.sshPassword)">Copy Password</button>
+          <button @click="connectSSH(server.id)" class="btn-ssh">Connect WebSSH</button>
         </div>
       </div>
     </div>
@@ -101,9 +111,8 @@ export default {
         console.error('Failed to assign user:', error);
       }
     },
-    copy(text) {
-      navigator.clipboard.writeText(text);
-      alert('Password copied to clipboard');
+    connectSSH(serverId) {
+      this.$router.push(`/dashboard/ssh/${serverId}`);
     }
   }
 };
@@ -168,6 +177,17 @@ button {
   border-radius: 4px;
   cursor: pointer;
 }
+
+.btn-ssh {
+  background-color: #2980b9;
+  width: 100%;
+  font-weight: bold;
+}
+
+.btn-ssh:hover {
+  background-color: #2471a3;
+}
+
 .admin-controls {
   margin-bottom: 2rem;
   padding: 1rem;

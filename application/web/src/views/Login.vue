@@ -37,7 +37,13 @@ export default {
           password: this.password
         });
         localStorage.setItem('user', JSON.stringify(response.data));
-        this.$router.push('/dashboard/servers');
+        
+        // 根据角色进行不同的重定向
+        if (response.data.role === 'AUDITOR') {
+          this.$router.push('/dashboard/logs');
+        } else {
+          this.$router.push('/dashboard/servers');
+        }
       } catch (err) {
         this.error = 'Invalid credentials';
       }
