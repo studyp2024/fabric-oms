@@ -7,6 +7,7 @@
       <div class="add-server-form">
         <h3>Add New Server</h3>
         <input v-model="newServer.ip" placeholder="Server IP">
+        <input v-model.number="newServer.sshPort" placeholder="SSH Port" type="number" min="1" max="65535">
         <input v-model="newServer.sshUser" placeholder="SSH User">
         <input v-model="newServer.sshPassword" placeholder="SSH Password">
         <button @click="addServer">Add Server</button>
@@ -24,6 +25,7 @@
 
         <!-- 只有管理员能看到密码信息和分配用户表单 -->
         <div v-if="isAdmin">
+          <p><strong>SSH Port:</strong> {{ server.sshPort }}</p>
           <p><strong>SSH User:</strong> {{ server.sshUser }}</p>
           <p><strong>SSH Password:</strong> *******</p>
           
@@ -63,6 +65,7 @@ export default {
       users: [],
       newServer: {
         ip: '',
+        sshPort: 22,
         sshUser: '',
         sshPassword: ''
       },
@@ -91,11 +94,14 @@ export default {
   },
   methods: {
     async addServer() {
-      if (!this.newServer.ip || !this.newServer.sshUser || !this.newServer.sshPassword) return;
+      if (!this.newServer.ip || !this.newServer.sshPort || !this.newServer.sshUser || !this.newServer.sshPassword) {
+        alert('Please fill in all fields');
+        return;
+      }
       try {
         const response = await axios.post('/api/servers', this.newServer);
         this.servers.push(response.data);
-        this.newServer = { ip: '', sshUser: '', sshPassword: '' };
+        this.newServer = { ip: '', sshPort: 22, sshUser: '', sshPassword: '' };
         alert('Server added successfully');
       } catch (error) {
         console.error('Failed to add server:', error);

@@ -20,6 +20,10 @@ public class ServerInfo {
     // 目标服务器的 IP 地址
     private String ip;
 
+    // 目标服务器的 SSH 端口
+    @Column(columnDefinition = "int default 22")
+    private int sshPort = 22;
+
     // 用于连接服务器的 SSH 用户名
     private String sshUser;
 

@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS servers (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     ip VARCHAR(255) NOT NULL,
+    ssh_port INT DEFAULT 22,
     ssh_user VARCHAR(255) NOT NULL,
     ssh_password VARCHAR(255) NOT NULL,
     assigned_user_id BIGINT,
@@ -36,4 +37,4 @@ INSERT INTO users (username, password, role) VALUES ('admin', 'admin', 'ADMIN');
 INSERT INTO users (username, password, role) VALUES ('ops', 'ops', 'OPS');
 INSERT INTO users (username, password, role) VALUES ('auditor', 'auditor', 'AUDITOR');
 
-INSERT INTO servers (ip, ssh_user, ssh_password, assigned_user_id, last_log_offset) VALUES ('192.168.1.100', 'ubuntu', 'password123', 2, 0);
+INSERT INTO servers (ip, ssh_port, ssh_user, ssh_password, assigned_user_id, last_log_offset) VALUES ('192.168.1.100', 22, 'ubuntu', 'password123', 2, 0);

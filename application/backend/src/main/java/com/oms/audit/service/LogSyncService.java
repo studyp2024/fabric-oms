@@ -7,14 +7,12 @@ import com.oms.audit.entity.AuditLog;
 import com.oms.audit.entity.ServerInfo;
 import com.oms.audit.repository.AuditLogRepository;
 import com.oms.audit.repository.ServerInfoRepository;
-import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -71,8 +69,8 @@ public class LogSyncService {
         ChannelExec channel = null;
 
         try {
-            // 建立 SSH 会话
-            session = jsch.getSession(server.getSshUser(), server.getIp(), 22);
+            // 建立 SSH 会话，使用配置的端口
+            session = jsch.getSession(server.getSshUser(), server.getIp(), server.getSshPort());
             session.setPassword(server.getSshPassword());
             session.setConfig("StrictHostKeyChecking", "no"); // 跳过主机密钥检查
             session.connect(5000); // 设置连接超时时间为 5000 毫秒

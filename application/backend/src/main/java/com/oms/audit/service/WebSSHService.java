@@ -58,8 +58,8 @@ public class WebSSHService {
 
         try {
             JSch jsch = new JSch();
-            // 建立 JSch Session
-            Session jschSession = jsch.getSession(server.getSshUser(), server.getIp(), 22);
+            // 建立 JSch Session，使用配置的端口
+            Session jschSession = jsch.getSession(server.getSshUser(), server.getIp(), server.getSshPort());
             jschSession.setPassword(server.getSshPassword());
             jschSession.setConfig("StrictHostKeyChecking", "no");
             jschSession.connect(5000);

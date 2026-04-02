@@ -33,8 +33,8 @@ public class ServerStatusMonitor {
             Session session = null;
             try {
                 JSch jsch = new JSch();
-                // 建立 SSH 会话
-                session = jsch.getSession(server.getSshUser(), server.getIp(), 22);
+                // 建立 SSH 会话，使用配置的端口
+                session = jsch.getSession(server.getSshUser(), server.getIp(), server.getSshPort());
                 session.setPassword(server.getSshPassword());
                 session.setConfig("StrictHostKeyChecking", "no"); // 跳过主机密钥检查
                 session.connect(5000); // 连接超时时间设为 5 秒
