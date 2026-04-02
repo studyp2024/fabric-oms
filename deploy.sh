@@ -89,7 +89,7 @@ fi
 node -v
 
 # 6. Setup MySQL
-echo "[6/8] Setting up MySQL..."
+echo "[6/9] Setting up MySQL..."
 apt-get install -y mysql-server
 systemctl start mysql
 systemctl enable mysql
@@ -101,8 +101,18 @@ mysql -u$DB_USER -p$DB_PASS $DB_NAME < $PROJECT_ROOT/database/schema.sql
 
 echo "Database initialized."
 
-# 7. Setup Hyperledger Fabric
-echo "[7/8] Setting up Hyperledger Fabric..."
+# 7. Setup Nginx
+echo "[7/9] Setting up Nginx..."
+if ! command -v nginx &> /dev/null; then
+    apt-get install -y nginx
+    systemctl start nginx
+    systemctl enable nginx
+else
+    echo "Nginx is already installed."
+fi
+
+# 8. Setup Hyperledger Fabric
+echo "[8/9] Setting up Hyperledger Fabric..."
 
 FABRIC_DIR="$PROJECT_ROOT/blockchain"
 SAMPLES_DIR="$FABRIC_DIR/fabric-samples"
@@ -116,8 +126,8 @@ else
     echo "Fabric binaries already exist."
 fi
 
-# 8. Build Projects
-echo "[8/8] Building Backend & Frontend..."
+# 9. Build Projects
+echo "[9/9] Building Backend & Frontend..."
 
 # Build Backend
 if [ -d "$PROJECT_ROOT/application/backend" ]; then

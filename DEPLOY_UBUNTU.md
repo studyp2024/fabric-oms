@@ -32,6 +32,7 @@
 *   安装 Java 8 & Maven
 *   安装 Node.js 18+
 *   安装并初始化 MySQL 数据库
+*   安装 Nginx 代理服务器
 *   下载 Hyperledger Fabric 二进制文件和样例
 *   构建后端 (Java) 和前端 (Vue) 项目
 
@@ -133,6 +134,14 @@ sudo apt-get install -y nodejs
 sudo apt-get install -y mysql-server
 sudo systemctl start mysql
 sudo systemctl enable mysql
+```
+
+#### 2.2.8 安装 Nginx
+生产环境前端静态文件代理必需。
+```bash
+sudo apt-get install -y nginx
+sudo systemctl start nginx
+sudo systemctl enable nginx
 ```
 
 ---
