@@ -27,7 +27,6 @@
         </tr>
       </tbody>
     </table>
-
     <div class="pagination">
       <button @click="prevPage" :disabled="currentPage === 0">Previous</button>
       <span>Page {{ currentPage + 1 }} of {{ totalPages }}</span>
@@ -40,10 +39,8 @@
     </div>
   </div>
 </template>
-
 <script>
 import axios from 'axios';
-
 export default {
   data() {
     return {
@@ -67,14 +64,12 @@ export default {
           page: this.currentPage,
           size: this.pageSize
         };
-
         if (this.onlySensitive) {
           url = '/api/audit/sensitive';
         } else if (this.searchQuery) {
           url = '/api/audit/search';
           params.q = this.searchQuery;
         }
-        
         const response = await axios.get(url, { params });
         this.logs = response.data.content;
         this.totalPages = response.data.totalPages;
@@ -106,7 +101,6 @@ export default {
   }
 };
 </script>
-
 <style scoped>
 table {
   width: 100%;

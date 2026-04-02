@@ -1,8 +1,6 @@
 <template>
   <div class="server-list">
     <h2>{{ isAdmin ? 'Manage Servers' : 'Assigned Servers' }}</h2>
-    
-    <!-- Admin Controls -->
     <div v-if="isAdmin" class="admin-controls">
       <div class="add-server-form">
         <h3>Add New Server</h3>
@@ -13,7 +11,6 @@
         <button @click="addServer">Add Server</button>
       </div>
     </div>
-
     <div class="card-container">
       <div v-for="server in servers" :key="server.id" class="card">
         <div class="card-header">
@@ -22,13 +19,10 @@
             {{ server.status || 'OFFLINE' }}
           </span>
         </div>
-
-        <!-- 只有管理员能看到密码信息和分配用户表单 -->
         <div v-if="isAdmin">
           <p><strong>SSH Port:</strong> {{ server.sshPort }}</p>
           <p><strong>SSH User:</strong> {{ server.sshUser }}</p>
           <p><strong>SSH Password:</strong> *******</p>
-          
           <div class="assign-user">
             <label>Assign to:</label>
             <select v-model="server.assignedUserId" @change="assignUser(server)">
@@ -39,14 +33,11 @@
             </select>
           </div>
         </div>
-
-        <!-- 运维人员只看到提示信息 -->
         <div v-else>
           <p style="color: #7f8c8d; font-size: 0.9em; margin-top: 10px;">
             You are assigned to manage this server. Direct SSH login credentials are hidden for security reasons.
           </p>
         </div>
-
         <div class="actions">
           <button @click="connectSSH(server.id)" class="btn-ssh">Connect WebSSH</button>
         </div>
@@ -54,10 +45,8 @@
     </div>
   </div>
 </template>
-
 <script>
 import axios from 'axios';
-
 export default {
   data() {
     return {
@@ -75,7 +64,6 @@ export default {
   async mounted() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     this.isAdmin = user.role === 'ADMIN';
-
     try {
       if (this.isAdmin) {
         const [serversRes, usersRes] = await Promise.all([
@@ -123,50 +111,42 @@ export default {
   }
 };
 </script>
-
 <style scoped>
 .server-list {
   padding: 20px;
 }
-
 .card-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
   margin-top: 20px;
 }
-
 .card {
   background: white;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
 }
-
 .status-badge {
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 0.8em;
   font-weight: bold;
 }
-
 .status-badge.online {
   background-color: #e8f5e9;
   color: #2e7d32;
 }
-
 .status-badge.offline {
   background-color: #ffebee;
   color: #c62828;
 }
-
 h3 {
   margin: 0;
   color: #2c3e50;
@@ -183,17 +163,14 @@ button {
   border-radius: 4px;
   cursor: pointer;
 }
-
 .btn-ssh {
   background-color: #2980b9;
   width: 100%;
   font-weight: bold;
 }
-
 .btn-ssh:hover {
   background-color: #2471a3;
 }
-
 .admin-controls {
   margin-bottom: 2rem;
   padding: 1rem;

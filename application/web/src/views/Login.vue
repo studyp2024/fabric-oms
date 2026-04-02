@@ -17,10 +17,8 @@
     </div>
   </div>
 </template>
-
 <script>
 import axios from 'axios';
-
 export default {
   data() {
     return {
@@ -37,8 +35,6 @@ export default {
           password: this.password
         });
         localStorage.setItem('user', JSON.stringify(response.data));
-        
-        // 根据角色进行不同的重定向
         if (response.data.role === 'AUDITOR') {
           this.$router.push('/dashboard/logs');
         } else {
@@ -51,7 +47,6 @@ export default {
   }
 };
 </script>
-
 <style scoped>
 .login-container {
   display: flex;

@@ -3,11 +3,8 @@
     <div class="sidebar">
       <h2>Audit System</h2>
       <nav>
-        <!-- 只有 ADMIN 和 OPS 可以看服务器列表 -->
         <router-link to="/dashboard/servers" v-if="user.role === 'ADMIN' || user.role === 'OPS'">Servers</router-link>
-        <!-- 只有 ADMIN 和 AUDITOR 可以看审计日志 -->
         <router-link to="/dashboard/logs" v-if="user.role === 'ADMIN' || user.role === 'AUDITOR'">Audit Logs</router-link>
-        <!-- 只有 ADMIN 可以管理用户 -->
         <router-link to="/dashboard/users" v-if="user.role === 'ADMIN'">User Management</router-link>
       </nav>
       <div class="user-info">
@@ -20,7 +17,6 @@
     </div>
   </div>
 </template>
-
 <script>
 export default {
   data() {
@@ -36,7 +32,6 @@ export default {
   }
 };
 </script>
-
 <style scoped>
 .dashboard {
   display: flex;

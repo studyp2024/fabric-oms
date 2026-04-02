@@ -1,7 +1,6 @@
 <template>
   <div class="user-list-container">
     <h2>User Management</h2>
-    
     <div class="add-user-form">
       <h3>Add New User</h3>
       <div class="form-group">
@@ -15,7 +14,6 @@
         <button @click="addUser" class="btn-primary">Add User</button>
       </div>
     </div>
-
     <table class="user-table">
       <thead>
         <tr>
@@ -40,10 +38,8 @@
     </table>
   </div>
 </template>
-
 <script>
 import axios from 'axios';
-
 export default {
   data() {
     return {
@@ -98,12 +94,10 @@ export default {
   }
 };
 </script>
-
 <style scoped>
 .user-list-container {
   padding: 20px;
 }
-
 .add-user-form {
   background: white;
   padding: 20px;
@@ -111,19 +105,16 @@ export default {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   margin-bottom: 20px;
 }
-
 .form-group {
   display: flex;
   gap: 10px;
   align-items: center;
 }
-
 input, select {
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
 }
-
 .user-table {
   width: 100%;
   border-collapse: collapse;
@@ -132,40 +123,33 @@ input, select {
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-
 th, td {
   padding: 12px;
   text-align: left;
   border-bottom: 1px solid #eee;
 }
-
 th {
   background-color: #f8f9fa;
   font-weight: 600;
 }
-
 .role-badge {
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 0.85em;
   font-weight: 600;
 }
-
 .role-badge.admin {
   background-color: #e3f2fd;
   color: #1976d2;
 }
-
 .role-badge.ops {
   background-color: #e8f5e9;
   color: #2e7d32;
 }
-
 .role-badge.auditor {
   background-color: #fff3e0;
   color: #f57c00;
 }
-
 .btn-primary {
   background-color: #1976d2;
   color: white;
@@ -174,7 +158,6 @@ th {
   border-radius: 4px;
   cursor: pointer;
 }
-
 .btn-danger {
   background-color: #dc3545;
   color: white;
@@ -183,7 +166,6 @@ th {
   border-radius: 4px;
   cursor: pointer;
 }
-
 .btn-danger:hover {
   background-color: #c82333;
 }
