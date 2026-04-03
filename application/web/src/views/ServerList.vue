@@ -31,6 +31,10 @@
               </option>
             </select>
           </div>
+          <div class="admin-actions" style="margin-top: 10px; display: flex; gap: 10px;">
+            <button @click="openEditModal(server)" style="background-color: #f39c12; flex: 1;">Edit</button>
+            <button @click="deleteServer(server.id)" style="background-color: #c0392b; flex: 1;">Delete</button>
+          </div>
         </div>
         <div v-else>
           <p style="color: #7f8c8d; font-size: 0.9em; margin-top: 10px;">
@@ -42,6 +46,34 @@
         </div>
       </div>
     </div>
+
+    <!-- Edit Server Modal -->
+    <div v-if="showEditModal" class="modal-overlay">
+      <div class="modal-content">
+        <h3>Edit Server</h3>
+        <div class="form-group">
+          <label>IP Address</label>
+          <input v-model="editServerData.ip" placeholder="Server IP">
+        </div>
+        <div class="form-group">
+          <label>SSH Port</label>
+          <input v-model.number="editServerData.sshPort" type="number" min="1" max="65535">
+        </div>
+        <div class="form-group">
+          <label>SSH User</label>
+          <input v-model="editServerData.sshUser" placeholder="SSH User">
+        </div>
+        <div class="form-group">
+          <label>SSH Password</label>
+          <input v-model="editServerData.sshPassword" type="password" placeholder="New Password (or leave current)">
+        </div>
+        <div class="modal-actions">
+          <button @click="saveEdit" class="btn-save">Save</button>
+          <button @click="closeEditModal" class="btn-cancel">Cancel</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 <script>
@@ -57,7 +89,9 @@ export default {
         sshUser: '',
         sshPassword: ''
       },
-      isAdmin: false
+      isAdmin: false,
+      showEditModal: false,
+      editServerData: {}
     };
   },
   async mounted() {
@@ -69,7 +103,10 @@ export default {
           axios.get('/api/servers'),
           axios.get('/api/auth/users')
         ]);
-        this.servers = serversRes.data;
+        this.servers = serversRes.data.map(server => ({
+          ...server,
+          assignedUserIds: server.assignedUserIds || []
+        }));
         this.users = usersRes.data.filter(u => u.role === 'OPS');
       } else {
         const response = await axios.get(`/api/servers/user/${user.id}`);
@@ -104,6 +141,40 @@ export default {
     },
     connectSSH(serverId) {
       this.$router.push(`/dashboard/ssh/${serverId}`);
+    },
+    openEditModal(server) {
+      this.editServerData = { ...server };
+      this.showEditModal = true;
+    },
+    closeEditModal() {
+      this.showEditModal = false;
+      this.editServerData = {};
+    },
+    async saveEdit() {
+      try {
+        await axios.put(`/api/servers/${this.editServerData.id}`, this.editServerData);
+        const index = this.servers.findIndex(s => s.id === this.editServerData.id);
+        if (index !== -1) {
+          this.servers[index] = { ...this.editServerData };
+        }
+        this.closeEditModal();
+        alert('Server updated successfully');
+      } catch (error) {
+        console.error('Failed to update server:', error);
+        alert('Failed to update server');
+      }
+    },
+    async deleteServer(id) {
+      if (confirm('Are you sure you want to delete this server?')) {
+        try {
+          await axios.delete(`/api/servers/${id}`);
+          this.servers = this.servers.filter(s => s.id !== id);
+          alert('Server deleted successfully');
+        } catch (error) {
+          console.error('Failed to delete server:', error);
+          alert('Failed to delete server');
+        }
+      }
     }
   }
 };
@@ -188,5 +259,47 @@ input, select {
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid #eee;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+}
+.form-group {
+  margin-bottom: 15px;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+.form-group input {
+  width: 100%;
+  box-sizing: border-box;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+.btn-save {
+  background-color: #27ae60;
+  color: white;
+}
+.btn-cancel {
+  background-color: #95a5a6;
+  color: white;
 }
 </style>

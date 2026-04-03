@@ -61,11 +61,13 @@ public class LogSyncService {
             BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
             String line;
             long bytesRead = 0;
+            System.out.println("开始同步服务器日志: " + server.getIp());
             while ((line = reader.readLine()) != null) {
                 byte[] lineBytes = (line + "\n").getBytes(StandardCharsets.UTF_8);
                 bytesRead += lineBytes.length;
                 processLogLine(line, server.getIp());
             }
+            System.out.println("服务器 " + server.getIp() + " 日志同步完成，读取字节数: " + bytesRead);
             if (bytesRead > 0) {
                 server.setLastLogOffset(offset + bytesRead);
                 serverInfoRepository.save(server);

@@ -33,6 +33,25 @@ public class ServerController {
         return serverInfoRepository.save(server);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateServer(@PathVariable Long id, @RequestBody ServerInfo serverDetails) {
+        return serverInfoRepository.findById(id).map(server -> {
+            server.setIp(serverDetails.getIp());
+            server.setSshPort(serverDetails.getSshPort());
+            server.setSshUser(serverDetails.getSshUser());
+            server.setSshPassword(serverDetails.getSshPassword());
+            return ResponseEntity.ok(serverInfoRepository.save(server));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteServer(@PathVariable Long id) {
+        return serverInfoRepository.findById(id).map(server -> {
+            serverInfoRepository.delete(server);
+            return ResponseEntity.ok().build();
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     @PutMapping("/{id}/assign")
     public ResponseEntity<?> assignServer(@PathVariable Long id, @RequestBody Set<Long> userIds) {
         return serverInfoRepository.findById(id).map(server -> {

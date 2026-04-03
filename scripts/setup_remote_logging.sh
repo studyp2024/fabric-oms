@@ -40,9 +40,8 @@ fi
 # 2. Create log file and set permissions
 echo ">>> Setting up log file: $LOG_FILE..."
 touch "$LOG_FILE"
-chmod 660 "$LOG_FILE"
-chown root:users "$LOG_FILE"
-echo "    Permissions set: chmod 660, chown root:users"
+chmod 666 "$LOG_FILE"
+echo "    Permissions set: chmod 666 (Global Read/Write)"
 
 echo ">>> Setup complete!"
 echo ">>> To apply changes immediately for the current session, run: source $BASHRC"
