@@ -25,32 +25,6 @@ type AuditLog struct {
 }
 
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
-	logs := []AuditLog{
-		{
-			ID:          "INIT_001",
-			Timestamp:   "2024-01-01 00:00:00",
-			IP:          "127.0.0.1",
-			ServerIP:    "localhost",
-			User:        "system(sys:admin)",
-			PWD:         "N/A",
-			Command:     "system init",
-			IsSensitive: false,
-			Hash:        "INIT_HASH",
-		},
-	}
-
-	for _, log := range logs {
-		logJSON, err := json.Marshal(log)
-		if err != nil {
-			return err
-		}
-
-		err = ctx.GetStub().PutState(log.ID, logJSON)
-		if err != nil {
-			return fmt.Errorf("failed to put to world state. %v", err)
-		}
-	}
-
 	return nil
 }
 
