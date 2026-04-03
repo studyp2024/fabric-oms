@@ -24,9 +24,8 @@
           <p><strong>SSH User:</strong> {{ server.sshUser }}</p>
           <p><strong>SSH Password:</strong> *******</p>
           <div class="assign-user">
-            <label>Assign to:</label>
-            <select v-model="server.assignedUserId" @change="assignUser(server)">
-              <option :value="null">Unassigned</option>
+            <label>Assign to (Hold Ctrl/Cmd to select multiple):</label>
+            <select multiple v-model="server.assignedUserIds" @change="assignUser(server)" style="height: 80px; width: 100%; margin-top: 5px;">
               <option v-for="user in users" :key="user.id" :value="user.id">
                 {{ user.username }}
               </option>
@@ -97,10 +96,8 @@ export default {
     },
     async assignUser(server) {
       try {
-        await axios.put(`/api/servers/${server.id}/assign`, null, {
-          params: { userId: server.assignedUserId }
-        });
-        alert('User assigned successfully');
+        await axios.put(`/api/servers/${server.id}/assign`, server.assignedUserIds);
+        alert('Users assigned successfully');
       } catch (error) {
         console.error('Failed to assign user:', error);
       }

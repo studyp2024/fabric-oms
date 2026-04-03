@@ -6,6 +6,7 @@ import com.oms.audit.entity.AuditLog;
 import com.oms.audit.entity.ServerInfo;
 import com.oms.audit.repository.AuditLogRepository;
 import com.oms.audit.repository.ServerInfoRepository;
+import com.oms.audit.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -29,6 +30,8 @@ public class LogSyncService {
     private AuditLogRepository auditLogRepository;
     @Autowired
     private ServerInfoRepository serverInfoRepository;
+    @Autowired
+    private UserRepository userRepository;
     @Scheduled(fixedRate = 10000) 
     public void syncLogs() {
         List<ServerInfo> servers = serverInfoRepository.findAll();
@@ -40,6 +43,7 @@ public class LogSyncService {
         if (server.getIp() == null || server.getSshUser() == null || server.getSshPassword() == null) {
             return;
         }
+        
         JSch jsch = new JSch();
         Session session = null;
         ChannelExec channel = null;

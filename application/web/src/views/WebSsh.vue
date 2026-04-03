@@ -52,9 +52,10 @@ export default {
       this.fitAddon.fit();
     },
     initWebSocket() {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const host = window.location.hostname;
-      const wsUrl = `${protocol}//${host}:8080/api/ws/ssh?serverId=${this.serverId}`;
+      const wsUrl = `${protocol}//${host}:8080/api/ws/ssh?serverId=${this.serverId}&userId=${user.id}`;
       this.ws = new WebSocket(wsUrl);
       
       this.ws.onmessage = (event) => {

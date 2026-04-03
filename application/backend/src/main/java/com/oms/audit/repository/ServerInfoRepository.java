@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 @Repository
 public interface ServerInfoRepository extends JpaRepository<ServerInfo, Long> {
-    List<ServerInfo> findByAssignedUserId(Long userId);
+    List<ServerInfo> findByAssignedUserIdsContaining(Long userId);
 }

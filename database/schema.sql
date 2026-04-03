@@ -14,10 +14,16 @@ CREATE TABLE IF NOT EXISTS servers (
     ssh_port INT DEFAULT 22,
     ssh_user VARCHAR(255) NOT NULL,
     ssh_password VARCHAR(255) NOT NULL,
-    assigned_user_id BIGINT,
     last_log_offset BIGINT DEFAULT 0,
-    status VARCHAR(20) DEFAULT 'OFFLINE',
-    FOREIGN KEY (assigned_user_id) REFERENCES users(id)
+    status VARCHAR(20) DEFAULT 'OFFLINE'
+);
+
+CREATE TABLE IF NOT EXISTS server_users (
+    server_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    PRIMARY KEY (server_id, user_id),
+    FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS audit_logs (
@@ -37,4 +43,5 @@ INSERT INTO users (username, password, role) VALUES ('admin', 'admin', 'ADMIN');
 INSERT INTO users (username, password, role) VALUES ('ops', 'ops', 'OPS');
 INSERT INTO users (username, password, role) VALUES ('auditor', 'auditor', 'AUDITOR');
 
-INSERT INTO servers (ip, ssh_port, ssh_user, ssh_password, assigned_user_id, last_log_offset) VALUES ('192.168.1.100', 22, 'ubuntu', 'password123', 2, 0);
+INSERT INTO servers (id, ip, ssh_port, ssh_user, ssh_password, last_log_offset) VALUES (1, '192.168.1.100', 22, 'ubuntu', 'password123', 0);
+INSERT INTO server_users (server_id, user_id) VALUES (1, 2);

@@ -24,7 +24,7 @@ if [ -n "\$SSH_CLIENT" ]; then
     SSH_CLIENT_IP=\$(echo "\$SSH_CLIENT" | awk '{print \$1}')
     SSH_COMMAND_LOG="$LOG_FILE"
     PROMPT_COMMAND='{
-        echo "\$(date +"%Y-%m-%d %H:%M:%S") | SSH_IP:\${SSH_CLIENT_IP} | USER:\${USER} | PWD:\${PWD} | COMMAND:\$(history 1 | awk '\''{sub(/^[ ]*[0-9]+[ ]*/, ""); print \$0}'\'')" >> \${SSH_COMMAND_LOG};
+        echo "\$(date +"%Y-%m-%d %H:%M:%S") | SSH_IP:\${SSH_CLIENT_IP} | USER:\${USER}(sys:\${OMS_SYS_USER:-unknown}) | PWD:\${PWD} | COMMAND:\$(history 1 | awk '\''{sub(/^[ ]*[0-9]+[ ]*/, ""); print \$0}'\'')" >> \${SSH_COMMAND_LOG};
     }'
 fi
 EOM
